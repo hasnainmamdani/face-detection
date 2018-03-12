@@ -38,7 +38,7 @@
 close all
 clear
 run('vlfeat/toolbox/vl_setup')
-
+%run('/home/kaho/Documents/MSBD6000C/Project2/linux/vlfeat-0.9.21/toolbox/vl_setup')
 [~,~,~] = mkdir('visualizations');
 
 data_path = '../data/'; %change if you want to work with a network copy
