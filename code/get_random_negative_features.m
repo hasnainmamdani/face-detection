@@ -34,7 +34,7 @@ function features_neg = get_random_negative_features(non_face_scn_path, feature_
 fprintf(non_face_scn_path)
 image_files = dir( fullfile( non_face_scn_path, '*.jpg' ));
 num_images = length(image_files);
-fprintf('get_random_negative_features use %d images\n',num_images)
+fprintf('\nget_random_negative_features use %d images\n',num_images)
 % placeholder to be deleted
 dims = (feature_params.template_size / feature_params.hog_cell_size)^2 * 31;
 features_neg = zeros(num_samples, dims);
@@ -85,6 +85,6 @@ end
 indices = randperm(count);
 features_neg = features_neg(indices,:);
 features_neg = features_neg(1:initial_num_samples, :);
-
+fprintf('%d /%d neg patches are used\n', initial_num_samples, count );
 fprintf('get_random_negative_features done\n\n');
 

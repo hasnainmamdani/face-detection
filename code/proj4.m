@@ -76,6 +76,14 @@ features_neg = get_random_negative_features( non_face_scn_path, feature_params, 
 w = rand((feature_params.template_size / feature_params.hog_cell_size)^2 * 31,1); %placeholder, delete
 b = rand(1); %placeholder, delete
 
+lambda = 0.0001;
+%Training Data:
+X = [features_pos; features_neg];
+%Training Label:
+Y = [ones(size(features_pos, 1), 1); -1 * ones(size(features_neg, 1), 1)];
+%Collect Data to SVM:
+[w b] = vl_svmtrain(X', Y', lambda);
+
 %% step 3. Examine learned classifier
 % You don't need to modify anything in this section. The section first
 % evaluates _training_ error, which isn't ultimately what we care about,
