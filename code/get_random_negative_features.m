@@ -31,9 +31,60 @@ function features_neg = get_random_negative_features(non_face_scn_path, feature_
 %  http://www.vlfeat.org/matlab/vl_hog.html  (API)
 %  http://www.vlfeat.org/overview/hog.html   (Tutorial)
 % rgb2gray
-
+fprintf(non_face_scn_path)
 image_files = dir( fullfile( non_face_scn_path, '*.jpg' ));
 num_images = length(image_files);
-
+fprintf('get_random_negative_features use %d images\n',num_images)
 % placeholder to be deleted
-features_neg = rand(100, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+dims = (feature_params.template_size / feature_params.hog_cell_size)^2 * 31;
+features_neg = zeros(num_samples, dims);
+
+% Find number of samples per image
+num_samples_per_image = ceil(num_samples / num_images);
+
+% Size of each sample patch
+patch_size = feature_params.template_size;
+
+initial_num_samples = num_samples;
+%[1 0.8 0.6 0.4]
+scales = 1:-0.2:0.4;
+count = 0 ;
+for i = 1:num_images
+    img = imread(strcat(non_face_scn_path, '/', image_files(i).name));
+    if (size(img, 3) > 1)
+        img = rgb2gray(img);
+    end
+
+    for scale_index = 1:length(scales)
+        scale = scales(scale_index);
+        scaled_img = imresize(img, scale);
+        img_size = size(scaled_img);
+        
+        if img_size(1) < feature_params.template_size || img_size(2) < feature_params.template_size
+            break
+        end
+
+        [y, x] = size(scaled_img);
+	    for j = 1 : ceil(num_samples_per_image * scale)
+	        small_img = img(randi(y - patch_size + 1) + (0 : patch_size - 1), randi(x - patch_size + 1) + (0 : patch_size - 1));
+            feat = vl_hog(single(small_img), feature_params.hog_cell_size);
+            reshaped_feat = reshape(feat, 1, []);
+            count = count + 1;
+            if count>=num_samples
+                % resize features_neg
+                num_samples = num_samples + initial_num_samples;
+                temp = features_neg;
+                features_neg = zeros(num_samples, dims);
+                features_neg(1:size(temp, 1), :) = temp;
+            end
+	        features_neg(count, :) = reshaped_feat;
+        end
+
+    end
+end
+indices = randperm(count);
+features_neg = features_neg(indices,:);
+features_neg = features_neg(1:initial_num_samples, :);
+
+fprintf('get_random_negative_features done\n\n');
+
