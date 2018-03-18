@@ -37,8 +37,8 @@
 % This should work on 32 and 64 bit versions of Windows, MacOS, and Linux
 close all
 clear
-run('vlfeat/toolbox/vl_setup')
-%run('/home/kaho/Documents/MSBD6000C/Project2/linux/vlfeat-0.9.21/toolbox/vl_setup')
+run('../mac/vlfeat-0.9.21/toolbox/vl_setup')
+%run('../linux/vlfeat-0.9.21/toolbox/vl_setup')
 [~,~,~] = mkdir('visualizations');
 
 data_path = '../data/'; %change if you want to work with a network copy
@@ -58,7 +58,7 @@ feature_params = struct('template_size', 36, 'hog_cell_size', 6);
 %% Step 1. Load positive training crops and random negative examples
 %YOU CODE 'get_positive_features' and 'get_random_negative_features'
 
-features_pos = get_positive_features( train_path_pos, feature_params );
+features_pos = get_positive_features(train_path_pos, feature_params);
 
 num_negative_examples = 10000; %Higher will work strictly better, but you should start with 10000 for debugging
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);

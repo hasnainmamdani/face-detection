@@ -55,29 +55,50 @@ for i = 1:length(test_scenes)
         img = rgb2gray(img);
     end
     
-    %You can delete all of this below.
-    % Let's create 15 random detections per image
-    cur_x_min = rand(15,1) * size(img,2);
-    cur_y_min = rand(15,1) * size(img,1);
-    cur_bboxes = [cur_x_min, cur_y_min, cur_x_min + rand(15,1) * 50, cur_y_min + rand(15,1) * 50];
-    cur_confidences = rand(15,1) * 4 - 2; %confidences in the range [-2 2]
-    cur_image_ids(1:15,1) = {test_scenes(i).name};
-    
+    curr_confidences = zeros(0,1);
+    curr_bboxes = zeros(0,4);
+    curr_image_ids = cell(0,1);
+
+    scale = 1;
+    window_size = feature_params.template_size / feature_params.hog_cell_size;
+
+    while scale >= 0.1
+        hog = vl_hog(imresize(img, scale), feature_params.hog_cell_size);
+
+        for j = 1: size(hog, 1) - window_size
+            for k = 1: size(hog, 2) - window_size
+                curr_features = hog(j: j + window_size - 1, k: k + window_size - 1, :);
+                confidence = reshape(curr_features, [1, window_size ^ 2 * 31]) * w + b;
+
+                if confidence > 0.7
+                    x_min = k * feature_params.hog_cell_size;
+                    y_min = j * feature_params.hog_cell_size;
+
+                    curr_bboxes = [curr_bboxes; [x_min, y_min, x_min + feature_params.template_size, y_min + feature_params.template_size]./scale];
+                    curr_confidences = [curr_confidences; confidence];
+                    curr_image_ids = [curr_image_ids; test_scenes(i).name];
+                end
+            end
+        end
+
+        scale = scale * 0.9;
+    end
+ 
     %non_max_supr_bbox can actually get somewhat slow with thousands of
     %initial detections. You could pre-filter the detections by confidence,
     %e.g. a detection with confidence -1.1 will probably never be
     %meaningful. You probably _don't_ want to threshold at 0.0, though. You
     %can get higher recall with a lower threshold. You don't need to modify
     %anything in non_max_supr_bbox, but you can.
-    [is_maximum] = non_max_supr_bbox(cur_bboxes, cur_confidences, size(img));
+    [is_maximum] = non_max_supr_bbox(curr_bboxes, curr_confidences, size(img));
 
-    cur_confidences = cur_confidences(is_maximum,:);
-    cur_bboxes      = cur_bboxes(     is_maximum,:);
-    cur_image_ids   = cur_image_ids(  is_maximum,:);
+    curr_confidences = curr_confidences(is_maximum,:);
+    curr_bboxes      = curr_bboxes(     is_maximum,:);
+    curr_image_ids   = curr_image_ids(  is_maximum,:);
  
-    bboxes      = [bboxes;      cur_bboxes];
-    confidences = [confidences; cur_confidences];
-    image_ids   = [image_ids;   cur_image_ids];
+    bboxes      = [bboxes;      curr_bboxes];
+    confidences = [confidences; curr_confidences];
+    image_ids   = [image_ids;   curr_image_ids];
 end
 
 
