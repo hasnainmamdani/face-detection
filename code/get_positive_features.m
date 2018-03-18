@@ -36,20 +36,20 @@ fprintf('\nget_positive_features use %d images\n',num_images)
 features_pos = zeros(num_images*2, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
 
 for i = 1:num_images
-        img = imread(strcat(train_path_pos, '/', image_files(i).name));
-        img = single(img)/255;
-        if (size(img, 3) > 1)
-            img = rgb2gray(img);
-        end
-        feat = vl_hog(img, feature_params.hog_cell_size);
-        reshaped_feat = reshape(feat, 1, []);
-        features_pos(2*i-1,:) = reshaped_feat;
-        
-        % mirroring the faces along the y axis
-        feat_flip = vl_hog(flipdim(img, 2), feature_params.hog_cell_size);
-        reshaped_feat_flip = reshape(feat_flip, 1, []);
-        features_pos(2*i,:) = reshaped_feat_flip;
+    img = imread(strcat(train_path_pos, '/', image_files(i).name));
+    img = single(img)/255;
+    if (size(img, 3) > 1)
+        img = rgb2gray(img);
     end
+    feat = vl_hog(img, feature_params.hog_cell_size);
+    reshaped_feat = reshape(feat, 1, []);
+    features_pos(2*i-1,:) = reshaped_feat;
+
+    % mirroring the faces along the y axis
+    feat_flip = vl_hog(flipdim(img, 2), feature_params.hog_cell_size);
+    reshaped_feat_flip = reshape(feat_flip, 1, []);
+    features_pos(2*i,:) = reshaped_feat_flip;
+end
 
 fprintf('get_positive_features done\n')
 
