@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>CS 143 Project</title>
+<title>MSBD6000C Project3 </title>
 <link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" title="Default" href="styles/github.css">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
@@ -136,44 +136,107 @@ table td img {
 <body>
 <div id="header" >
 <div id="headersub">
-<h1>Your Name <span style="color: #DE3737">(your cs id)</span></h1>
+<h1>KaHo LAU <span style="color: #DE3737">20094423</span></h1>
+<h1>Mamdani, Muhammad Hasnain <span style="color: #DE3737">(your cs id)</span></h1>
 </div>
 </div>
 <div class="container">
 
-<h2>CS 143 / Project 4 / Face Detection with a Sliding Window</h2>
+<h2>MSBD6000C Project 3 Face Detection </h2>
 
+<!--
 <div style="float: right; padding: 20px">
 <img src="placeholder.jpg" />
 <p style="font-size: 14px">Example of a right floating element.</p>
 </div>
-
-<p> 	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-
-<ol>
-<li>list element 1.</li>
-<li>list element 2.</li>
-<li>etc.</li>
-</ol>
-
-<p> 	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-
-<div style="clear:both">
-<h3>Example heading</h3>
-
-<p> 	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-
-<h2>Example of code with highlighting</h2>
-The javascript in the <code>highlighting</code> folder is configured to do syntax highlighting in code blocks such as the one below.<p>
-
+-->
+<h3>Part 1: Positive Feature Extraction</h3>
+<p> 	Extract positive feature from 36x36 face only images. We use vl_hog from vlfeat library to extract the HoG descriptors.</p>
 <pre><code>
-%example code
-for i = 1:length(offset)
-    source = imread(sprintf('%s/source_%02d.jpg',data_dir,i));
-    mask   = imread(sprintf('%s/mask_%02d.jpg',data_dir,i));
-    target = imread(sprintf('%s/target_%02d.jpg',data_dir,i));
+for i = 1:num_images
+    img = imread(strcat(train_path_pos, '/', image_files(i).name));
+    img = single(img)/255;
+    if (size(img, 3) > 1)
+        img = rgb2gray(img);
+    end
+    feat = vl_hog(img, feature_params.hog_cell_size);
+    reshaped_feat = reshape(feat, 1, []);
+    features_pos(2*i-1,:) = reshaped_feat;
 
+    % mirroring the faces along the y axis
+    feat_flip = vl_hog(flipdim(img, 2), feature_params.hog_cell_size);
+    reshaped_feat_flip = reshape(feat_flip, 1, []);
+    
 </code></pre>
+
+<h3>Part 2: Negative Feature Extraction</h3>
+<p> 	Extract negative feature from 36x36 face only images. We use vl_hog from vlfeat library to extract the HoG descriptors. We first estimate the number of sample per non-face image. Then, we randomly sample each image with different scale([1 0.8 .06 .04]). Finally, we will randomly pick up the required number of sample since each image is sampled multiple time according to scale  </p>
+<pre><code>
+% Find number of samples per image
+num_samples_per_image = ceil(num_samples / num_images);
+
+% Size of each sample patch
+patch_size = feature_params.template_size;
+
+initial_num_samples = num_samples;
+%[1 0.8 0.6 0.4]
+scales = 1:-0.2:0.4;
+count = 0 ;
+for i = 1:num_images
+    img = imread(strcat(non_face_scn_path, '/', image_files(i).name));
+    if (size(img, 3) > 1)
+        img = rgb2gray(img);
+    end
+
+    for scale_index = 1:length(scales)
+        scale = scales(scale_index);
+        scaled_img = imresize(img, scale);
+        img_size = size(scaled_img);
+        
+        if img_size(1) < feature_params.template_size || img_size(2) < feature_params.template_size
+            break
+        end
+
+        [y, x] = size(scaled_img);
+	    for j = 1 : ceil(num_samples_per_image * scale)
+	        small_img = img(randi(y - patch_size + 1) + (0 : patch_size - 1), randi(x - patch_size + 1) + (0 : patch_size - 1));
+            feat = vl_hog(single(small_img), feature_params.hog_cell_size);
+            reshaped_feat = reshape(feat, 1, []);
+            count = count + 1;
+            if count>=num_samples
+                % resize features_neg
+                num_samples = num_samples + initial_num_samples;
+                temp = features_neg;
+                features_neg = zeros(num_samples, dims);
+                features_neg(1:size(temp, 1), :) = temp;
+            end
+	        features_neg(count, :) = reshaped_feat;
+        end
+
+    end
+end
+indices = randperm(count);
+features_neg = features_neg(indices,:);
+features_neg = features_neg(1:initial_num_samples, :);
+    
+</code></pre>
+
+
+<h3>Part 3: Training SVM</h3>
+<p> 	We train the svm classifier using the feature extracted in previous parts</p>
+<pre><code>
+lambda = 0.0001;
+%Training Data:
+X = [features_pos; features_neg];
+%Training Label:
+Y = [ones(size(features_pos, 1), 1); -1 * ones(size(features_neg, 1), 1)];
+%Collect Data to SVM:
+[w b] = vl_svmtrain(X', Y', lambda);
+    
+</code></pre>
+
+
+
 
 <h3>Results in a table</h3>
 
