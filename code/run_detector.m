@@ -70,7 +70,7 @@ for i = 1:length(test_scenes)
                 curr_features = hog(j: j + window_size - 1, k: k + window_size - 1, :);
                 confidence = reshape(curr_features, [1, window_size ^ 2 * 31]) * w + b;
 
-                if confidence > 0.7
+                if confidence > 0.75
                     x_min = k * feature_params.hog_cell_size;
                     y_min = j * feature_params.hog_cell_size;
 
@@ -81,7 +81,7 @@ for i = 1:length(test_scenes)
             end
         end
 
-        scale = scale * 0.9;
+        scale = scale - 0.05;
     end
  
     %non_max_supr_bbox can actually get somewhat slow with thousands of

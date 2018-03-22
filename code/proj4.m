@@ -48,6 +48,8 @@ test_scn_path = fullfile(data_path,'test_scenes/test_jpg'); %CMU+MIT test scenes
 % test_scn_path = fullfile(data_path,'extra_test_scenes'); %Bonus scenes
 label_path = fullfile(data_path,'test_scenes/ground_truth_bboxes.txt'); %the ground truth face locations in the test set
 
+should_mine_hard_negatives = true;
+
 %The faces are 36x36 pixels, which works fine as a template size. You could
 %add other fields to this struct if you want to modify HoG default
 %parameters such as the number of orientations, but that does not help
@@ -127,6 +129,20 @@ imwrite(hog_template_image, 'visualizations/hog_template.png')
 % you probably want to modify 'run_detector', run the detector on the
 % images in 'non_face_scn_path', and keep all of the features above some
 % confidence level.
+
+if should_mine_hard_negatives 
+    features_hard_neg = mine_hard_negatives(non_face_scn_path, w, b, feature_params);
+    features_neg = [features_neg; features_hard_neg];
+
+    lambda = 0.0001;
+    %Training Data:
+    X = [features_pos; features_neg];
+
+    %Training Label:
+    Y = [ones(size(features_pos, 1), 1); -1 * ones(size(features_neg, 1), 1)];
+    %Collect Data to SVM:
+    [w b] = vl_svmtrain(X', Y', lambda);
+end
 
 %% Step 5. Run detector on test set.
 % YOU CODE 'run_detector'. Make sure the outputs are properly structured!
