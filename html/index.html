@@ -137,7 +137,7 @@ table td img {
 <div id="header" >
 <div id="headersub">
 <h1>KaHo LAU <span style="color: #DE3737">20094423</span></h1>
-<h1>Mamdani, Muhammad Hasnain <span style="color: #DE3737">(your cs id)</span></h1>
+<h1>Mamdani, Muhammad Hasnain <span style="color: #DE3737">20491774</span></h1>
 </div>
 </div>
 <div class="container">
@@ -235,10 +235,70 @@ Y = [ones(size(features_pos, 1), 1); -1 * ones(size(features_neg, 1), 1)];
     
 </code></pre>
 
+<h3>Step 5: Run Detector on Test Set</h3>
 
+<p>We run a detector on all the test images. Firstly, we compute the HoG features of the image. Then we iterate through each group of cell (sliding window) and compute the confidence level. If it is higher than the threshold, we consider it as a face. We then scale the image in a loop to detect faces of different sizes. After some experimentation I find the threshold of 0.75 works good in our use case. In the end we supress the overlapping superfluous image detections.</p>
+<p>Below is a code snippet that shows the core of how we run detector for a given image.</p>
+<pre><code>
+ while scale >= 0.1
+    hog = vl_hog(imresize(img, scale), feature_params.hog_cell_size);
 
+    for j = 1: size(hog, 1) - window_size
+        for k = 1: size(hog, 2) - window_size
+            curr_features = hog(j: j + window_size - 1, k: k + window_size - 1, :);
+            confidence = reshape(curr_features, [1, window_size ^ 2 * 31]) * w + b;
+
+            if confidence > 0.75
+                x_min = k * feature_params.hog_cell_size;
+                y_min = j * feature_params.hog_cell_size;
+
+                curr_bboxes = [curr_bboxes; [x_min, y_min, x_min + feature_params.template_size, y_min + feature_params.template_size]./scale];
+                curr_confidences = [curr_confidences; confidence];
+                curr_image_ids = [curr_image_ids; test_scenes(i).name];
+            end
+        end
+    end
+
+    scale = scale - 0.01;
+end
+</code></pre>
+
+<h3>EXTRA CREDITS</h3>
+<h3>Part 4: (Optional) - Hard Negative Mining</h3>
+<p> We perform the hard negative mining in out project by modifying the run_detector.m to return features from the negative image dataset. We set the threshold to 0.5 after doing some experimentation with different values. Any segment of image that exceeds the threshold is used to further train the classifier as a hard negative. We then combine the originally obtained negatives with the hard negatives and build an even stronger classifier. As suggested we did not run non-max suppression while mining hard-negatives</p>
+<p>Below is a code snippet that shows the core of how we perform hard negative mining for a given image.</p>
+<pre><code>
+while scale >= 0.1
+    hog = vl_hog(imresize(img, scale), feature_params.hog_cell_size);
+
+    for j = 1: size(hog, 1) - window_size
+        for k = 1: size(hog, 2) - window_size
+            curr_features = hog(j: j + window_size - 1, k: k + window_size - 1, :);
+            curr_features = reshape(curr_features, [1, window_size ^ 2 * 31]) * w + b;
+            confidence = curr_features * w + b;
+
+            if confidence > 0.5
+                x_min = k * feature_params.hog_cell_size;
+                y_min = j * feature_params.hog_cell_size;
+
+                curr_bboxes = [curr_bboxes; [x_min, y_min, x_min + feature_params.template_size, y_min + feature_params.template_size]./scale];
+                curr_confidences = [curr_confidences; confidence];
+                curr_features_hard_neg = [curr_features_hard_neg; curr_features];
+            end
+        end
+    end
+
+    scale = scale - 0.01;
+end    
+</code></pre>
+
+<h3>Results of hard negative mining</h3>
+<p>With hard negative mining, we didn't find the precision being improved significantly. In some cases, we even saw a decrease in precision. We however did see in some images that false negatives were reduced! See the images below for coparison.</p>
 
 <h3>Results in a table</h3>
+
+
+OVERALL WE HAVE MADE SOME COMPROMISES. SCALE SIZE. STEP SIZE. NUMBER OF NEGATIVE SAMPLES etc.
 
 <table border=1>
 <tr>
