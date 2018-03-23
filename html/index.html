@@ -235,7 +235,7 @@ Y = [ones(size(features_pos, 1), 1); -1 * ones(size(features_neg, 1), 1)];
     
 </code></pre>
 
-<h3>Step 5: Run Detector on Test Set</h3>
+<h3>Step 4: Run Detector on Test Set</h3>
 
 <p>We run a detector on all the test images. Firstly, we compute the HoG features of the image. Then we iterate through each group of cell (sliding window) and compute the confidence level. If it is higher than the threshold, we consider it as a face. We then scale the image in a loop to detect faces of different sizes. After some experimentation I find the threshold of 0.75 works good in our use case. In the end we supress the overlapping superfluous image detections.</p>
 <p>Below is a code snippet that shows the core of how we run detector for a given image.</p>
@@ -377,52 +377,40 @@ while scale >= 0.1
 end    
 </code></pre>
 
-<h3>Results of hard negative mining</h3>
-<p>With hard negative mining, we didn't find the precision being improved significantly. In some cases, we even saw a decrease in precision. We however did see in some images that false negatives were reduced! See the images below for coparison.</p>
+<p>With hard negative mining, we didn't find the precision being improved significantly. In some cases, we even saw a decrease in precision. We however did see in some images that false negatives were greatly reduced!</p>
 
-<h3>Results in a table</h3>
+<table width="100%" border="1">
+    <tbody>
+    	<tr>
+		    <th>Without Hard Negative Mining</th>
+		    <th>With Hard Negative Mining</th> 
+	  </tr>
+    	<tr>
+            <td>
+                <img src="without_hard_negative_mining/blues-double.png" width="90%">
+            </td>
+            <td>
+                <img src="with_hard_negative_mining/blues-double.png" width="90%">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="without_hard_negative_mining/audrybt1.png" width="90%">
+            </td>
+            <td>
+                <img src="with_hard_negative_mining/audrybt1.png" width="90%">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="without_hard_negative_mining/audrey1.png" width="90%">
+            </td>
+            <td>
+                <img src="with_hard_negative_mining/audrey1.png" width="90%">
+            </td>
+        </tr>
+ 	</tbody>
+ </table>
 
-
-OVERALL WE HAVE MADE SOME COMPROMISES. SCALE SIZE. STEP SIZE. NUMBER OF NEGATIVE SAMPLES etc.
-
-<table border=1>
-<tr>
-<td>
-<img src="placeholder.jpg" width="24%"/>
-<img src="placeholder.jpg"  width="24%"/>
-<img src="placeholder.jpg" width="24%"/>
-<img src="placeholder.jpg" width="24%"/>
-</td>
-</tr>
-
-<tr>
-<td>
-<img src="placeholder.jpg" width="24%"/>
-<img src="placeholder.jpg"  width="24%"/>
-<img src="placeholder.jpg" width="24%"/>
-<img src="placeholder.jpg" width="24%"/>
-</td>
-</tr>
-
-</table>
-
-<center>
-<p>
-Face template HoG visualization for the starter code. This is completely random, but it should actually look like a face once you train a reasonable classifier.
-<p>
-<img src="hog_template.png">
-<p>
-Precision Recall curve for the starter code.
-<p>
-<img src="average_precision.png">
-<p>
-Example of detection on the test set from the starter code.
-<img src="detections_Argentina.jpg.png">
-
-</center>
-
-<div style="clear:both" >
-<p> 	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-</div>
 </body>
 </html>
