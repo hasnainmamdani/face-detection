@@ -27,13 +27,18 @@ function features_pos = get_positive_features(train_path_pos, feature_params)
 %  http://www.vlfeat.org/matlab/vl_hog.html  (API)
 %  http://www.vlfeat.org/overview/hog.html   (Tutorial)
 % rgb2gray
+enable_augment = true
 fprintf(train_path_pos)
 image_files = dir( fullfile( train_path_pos, '*.jpg') ); %Caltech Faces stored as .jpg
-num_images = int16(length(image_files)*0.3);
+
+num_images = int16(length(image_files))*0.3;
+if enable_augment
+    num_images = num_images*3
+end
 fprintf('\nget_positive_features use %d images\n',num_images)
 % placeholder to be deleted
 %feature_params = struct('template_size', 36, 'hog_cell_size', 6);
-features_pos = zeros(num_images*2, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+features_pos = zeros(num_images, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
 
 for i = 1:num_images
     img = imread(strcat(train_path_pos, '/', image_files(i).name));
@@ -43,12 +48,22 @@ for i = 1:num_images
     end
     feat = vl_hog(img, feature_params.hog_cell_size);
     reshaped_feat = reshape(feat, 1, []);
-    features_pos(2*i-1,:) = reshaped_feat;
+    
+    if enable_augment
+        features_pos(3*i-1,:) = reshaped_feat;
 
-    % mirroring the faces along the y axis
-    feat_flip = vl_hog(flipdim(img, 2), feature_params.hog_cell_size);
-    reshaped_feat_flip = reshape(feat_flip, 1, []);
-    features_pos(2*i,:) = reshaped_feat_flip;
+        % mirroring the faces along the y axis
+        feat_flip = vl_hog(flipdim(img, 2), feature_params.hog_cell_size);
+        features_pos(3*i-2,:) = reshape(feat_flip, 1, []);
+        
+        img_rot = imrotate(img,-6,'bilinear','crop');
+        img_rot = imcrop(img_rot, [3,3,30,30]);
+        img_rot = imresize(img_rot, [36,36],'bilinear');
+        feat_rot = vl_hog(img_rot, feature_params.hog_cell_size);
+        features_pos(3*i,:) = reshape(feat_rot, 1,  []);
+    else
+        features_pos(i,:) = reshaped_feat;
+    end
 end
 
 fprintf('get_positive_features done\n')

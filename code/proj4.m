@@ -37,8 +37,8 @@
 % This should work on 32 and 64 bit versions of Windows, MacOS, and Linux
 close all
 clear
-run('../mac/vlfeat-0.9.21/toolbox/vl_setup')
-%run('../linux/vlfeat-0.9.21/toolbox/vl_setup')
+%run('../mac/vlfeat-0.9.21/toolbox/vl_setup')
+run('../linux/vlfeat-0.9.21/toolbox/vl_setup')
 [~,~,~] = mkdir('visualizations');
 
 data_path = '../data/'; %change if you want to work with a network copy
@@ -54,7 +54,7 @@ should_mine_hard_negatives = true;
 %add other fields to this struct if you want to modify HoG default
 %parameters such as the number of orientations, but that does not help
 %performance in our limited test.
-feature_params = struct('template_size', 36, 'hog_cell_size', 6);
+feature_params = struct('template_size', 36, 'hog_cell_size', 3);
 
 
 %% Step 1. Load positive training crops and random negative examples
@@ -170,7 +170,7 @@ end
 visualize_detections_by_image(bboxes, confidences, image_ids, tp, fp, test_scn_path, label_path)
 % visualize_detections_by_image_no_gt(bboxes, confidences, image_ids, test_scn_path)
 
-% visualize_detections_by_confidence(bboxes, confidences, image_ids, test_scn_path, label_path);
+%visualize_detections_by_confidence(bboxes, confidences, image_ids, test_scn_path, label_path);
 
 % performance to aim for
 % random (stater code) 0.001 AP

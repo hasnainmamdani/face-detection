@@ -48,7 +48,7 @@ image_ids = cell(0,1);
 
 for i = 1:length(test_scenes)
       
-    fprintf('Detecting faces in %s\n', test_scenes(i).name)
+    %fprintf('Detecting faces in %s\n', test_scenes(i).name)
     img = imread( fullfile( test_scn_path, test_scenes(i).name ));
     img = single(img)/255;
     if(size(img,3) > 1)

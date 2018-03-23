@@ -7,7 +7,7 @@ features_hard_neg = zeros(0, (feature_params.template_size / feature_params.hog_
 
 for i = 1:length(test_scenes)
 
-    fprintf('Detecting hard negatives in %s\n', test_scenes(i).name)
+    %fprintf('Detecting hard negatives in %s\n', test_scenes(i).name)
     img = imread( fullfile( non_face_scn_path, test_scenes(i).name ));
     img = single(img)/255;
     if(size(img,3) > 1)
