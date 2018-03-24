@@ -221,6 +221,27 @@ features_neg = features_neg(1:initial_num_samples, :);
     
 </code></pre>
 
+<table width="100%">
+            <tbody><tr>
+            <tr>
+                <td>
+                    <img src="hog_template_6.png" width="90%">
+                    <figcaption>Cell Size = 6</figcaption>
+                    
+                </td>
+                <td>
+                    <img src="hog_template_4.png" width="90%">
+                    <figcaption>Cell Size = 4</figcaption>
+                    
+                </td>
+                <td>
+                    <img src="hog_template_3.png" width="90%">
+                    <figcaption>Cell Size = 3</figcaption>
+                    
+                </td>
+            </tr>
+ </tbody></table>
+
 
 <h3>Part 3: Training SVM</h3>
 <p> 	We train the svm classifier using the feature extracted in previous parts</p>
@@ -268,47 +289,30 @@ end
             <tbody><tr>
                 <td>
                     <img src="average_precision_6.png" width="90%">
-                    
-                    
-                </td>
-                <td>
-                    <img src="average_precision_4.png" width="90%">
-                    
-                    
-                </td>
-                <td>
-                    <img src="average_precision_3_aug.png" width="90%">
-                    
-                    
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <img src="hog_template_6.png" width="90%">
                     <figcaption>Cell Size = 6</figcaption>
                     
                 </td>
                 <td>
-                    <img src="hog_template_4.png" width="90%">
+                    <img src="average_precision_4.png" width="90%">
                     <figcaption>Cell Size = 4</figcaption>
                     
                 </td>
                 <td>
-                    <img src="hog_template_3.png" width="90%">
+                    <img src="average_precision_3.png" width="90%">
                     <figcaption>Cell Size = 3</figcaption>
                     
                 </td>
             </tr>
+            
  </tbody></table>
 
 <h2>EXTRA CREDITS</h2>
 <h3>Augmentation of traning data</h3>
-We do mirror of image by flipping and rotate the image a little bit. The result increase alot to 92.3%.
+We do mirror of image by flipping and rotate the image a little bit. The result increased a little bit.
 <pre><code>
-num_images = int16(length(image_files))*0.3;
-num_images = num_images*3
+num_images = int16(length(image_files));
 fprintf('\nget_positive_features use %d images\n',num_images)
-features_pos = zeros(num_images, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+features_pos = zeros(num_images*3, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
 
 for i = 1:num_images
     img = imread(strcat(train_path_pos, '/', image_files(i).name));
@@ -333,21 +337,6 @@ for i = 1:num_images
     features_pos(3*i,:) = reshape(feat_rot, 1,  []);
 end
 </code></pre>
-
-<table width="100%">
-            <tbody><tr>
-                <td>
-                    <img src="average_precision_3_aug.png" width="90%">
-                    <figcaption>Cell Size = 3</figcaption>
-                    
-                </td>
-                <td>
-                    <img src="hog_template_3.png" width="90%">
-                    <figcaption>Cell Size = 3</figcaption>
-                    
-                </td>
-            </tr>
- </tbody></table>
 
 <h3>Hard Negative Mining</h3>
 <p> We perform the hard negative mining in out project by modifying the run_detector.m to return features from the negative image dataset. We set the threshold to 0.5 after doing some experimentation with different values. Any segment of image that exceeds the threshold is used to further train the classifier as a hard negative. We then combine the originally obtained negatives with the hard negatives and build an even stronger classifier. As suggested we did not run non-max suppression while mining hard-negatives</p>
@@ -411,6 +400,86 @@ end
         </tr>
  	</tbody>
  </table>
+<!--
+<h3>Results of hard negative mining </h3>
+<p>With hard negative mining, we didn't find the precision being improved significantly. In some cases, we even saw a decrease in precision. We however did see in some images that false negatives were reduced! See the images below for coparison.</p>
+-->
+
+This the result after adding implementation fo extra credit
+<table width="100%">
+            <tbody><tr>
+                <td>
+                    <img src="average_precision_3_aug_hard.png" width="90%">
+                    <figcaption>Cell Size = 3</figcaption>
+                    
+                </td>
+                <td>
+                    <img src="hog_template_3_aug_hard.png" width="90%">
+                    <figcaption>Cell Size = 3</figcaption>
+                    
+                </td>
+            </tr>
+ </tbody></table>
+
+
+<h3> Final Results</h3>
+Previously, only 30% of face image and 10000 negative samples are used for seek of speeding up debug process. Finally, we use all images for getting positive feature and increase the negative feature sameple to 30000. The resulted precision increase a lot to  92.3% which should be our best so far but it takes almost an hour to complete the computation on our computer.
+
+<table width="100%">
+            <tbody><tr>
+                <td>
+                    <img src="average_precision_3_aug.png" width="90%">
+                    <figcaption>Cell Size = 3</figcaption>
+                    
+                </td>
+                <td>
+                    <img src="hog_template_3.png" width="90%">
+                    <figcaption>Cell Size = 3</figcaption>
+                    
+                </td>
+            </tr>
+ </tbody></table>
+<center>
+
+Example of detection on the test set.
+
+<table width="100%">
+            <tbody><tr>
+                <td>
+                    <img src="arsenal_3_aug_hard.png" width="100%">
+                    
+                </td>
+                <td>
+                    <img src="Brazil_3_aug_hard.png" width="100%">
+                    
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="Ecuador_3_aug_hard.png" width="100%">
+                    
+                </td>
+                <td>
+                    <img src="Germany_3_aug_hard.png" width="100%">
+                    
+                </td>
+
+            </tr>
+                <tr>
+                <td>
+                    <img src="Colombia_3_aug_hard.png" width="100%">
+                    
+                </td>
+                <td>
+                    <img src="England_3_aug_hard.png" width="100%">
+                    
+                </td>
+            </tr>
+
+ </tbody></table>
+<center>
+</center>
+
 
 </body>
 </html>

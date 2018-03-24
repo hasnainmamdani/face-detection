@@ -27,18 +27,21 @@ function features_pos = get_positive_features(train_path_pos, feature_params)
 %  http://www.vlfeat.org/matlab/vl_hog.html  (API)
 %  http://www.vlfeat.org/overview/hog.html   (Tutorial)
 % rgb2gray
-enable_augment = true
+enable_augment = true;
 fprintf(train_path_pos)
 image_files = dir( fullfile( train_path_pos, '*.jpg') ); %Caltech Faces stored as .jpg
 
-num_images = int16(length(image_files))*0.3;
-if enable_augment
-    num_images = num_images*3
-end
+num_images = int16(length(image_files));
+
 fprintf('\nget_positive_features use %d images\n',num_images)
 % placeholder to be deleted
 %feature_params = struct('template_size', 36, 'hog_cell_size', 6);
-features_pos = zeros(num_images, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+if enable_augment
+    fprintf('with augmentation\n')
+    features_pos = zeros(num_images*3, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+else
+    features_pos = zeros(num_images*2, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);
+end
 
 for i = 1:num_images
     img = imread(strcat(train_path_pos, '/', image_files(i).name));
@@ -62,7 +65,10 @@ for i = 1:num_images
         feat_rot = vl_hog(img_rot, feature_params.hog_cell_size);
         features_pos(3*i,:) = reshape(feat_rot, 1,  []);
     else
-        features_pos(i,:) = reshaped_feat;
+        features_pos(2*i,:) = reshaped_feat;
+        
+        feat_flip = vl_hog(flipdim(img, 2), feature_params.hog_cell_size);
+        features_pos(2*i-1,:) = reshape(feat_flip, 1, []);
     end
 end
 
