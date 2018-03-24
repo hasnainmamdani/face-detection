@@ -4,7 +4,7 @@
 % HoG template according to 'feature_params'. For improved performance, try
 % mirroring or warping the positive training examples.
 
-function features_pos = get_positive_features(train_path_pos, feature_params)
+function features_pos = get_positive_features(train_path_pos, feature_params, enable_augment)
 % 'train_path_pos' is a string. This directory contains 36x36 images of
 %   faces
 % 'feature_params' is a struct, with fields
@@ -27,7 +27,6 @@ function features_pos = get_positive_features(train_path_pos, feature_params)
 %  http://www.vlfeat.org/matlab/vl_hog.html  (API)
 %  http://www.vlfeat.org/overview/hog.html   (Tutorial)
 % rgb2gray
-enable_augment = true;
 fprintf(train_path_pos)
 image_files = dir( fullfile( train_path_pos, '*.jpg') ); %Caltech Faces stored as .jpg
 

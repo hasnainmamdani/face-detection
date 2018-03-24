@@ -37,8 +37,8 @@
 % This should work on 32 and 64 bit versions of Windows, MacOS, and Linux
 close all
 clear
-%run('../mac/vlfeat-0.9.21/toolbox/vl_setup')
-run('../linux/vlfeat-0.9.21/toolbox/vl_setup')
+run('../mac/vlfeat-0.9.21/toolbox/vl_setup')
+%run('../linux/vlfeat-0.9.21/toolbox/vl_setup')
 [~,~,~] = mkdir('visualizations');
 
 data_path = '../data/'; %change if you want to work with a network copy
@@ -48,7 +48,8 @@ test_scn_path = fullfile(data_path,'test_scenes/test_jpg'); %CMU+MIT test scenes
 % test_scn_path = fullfile(data_path,'extra_test_scenes'); %Bonus scenes
 label_path = fullfile(data_path,'test_scenes/ground_truth_bboxes.txt'); %the ground truth face locations in the test set
 
-should_mine_hard_negatives = true;
+enable_hard_negative_mining = true;
+enable_augment = true;
 
 %The faces are 36x36 pixels, which works fine as a template size. You could
 %add other fields to this struct if you want to modify HoG default
@@ -60,9 +61,9 @@ feature_params = struct('template_size', 36, 'hog_cell_size', 3);
 %% Step 1. Load positive training crops and random negative examples
 %YOU CODE 'get_positive_features' and 'get_random_negative_features'
 
-features_pos = get_positive_features(train_path_pos, feature_params);
+features_pos = get_positive_features(train_path_pos, feature_params, enable_augment);
 
-num_negative_examples = 30000; %Higher will work strictly better, but you should start with 10000 for debugging
+num_negative_examples = 15000; %Higher will work strictly better, but you should start with 10000 for debugging
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
     
@@ -130,7 +131,7 @@ imwrite(hog_template_image, 'visualizations/hog_template.png')
 % images in 'non_face_scn_path', and keep all of the features above some
 % confidence level.
 
-if should_mine_hard_negatives 
+if enable_hard_negative_mining 
     features_hard_neg = mine_hard_negatives(non_face_scn_path, w, b, feature_params);
     features_neg = [features_neg; features_hard_neg];
 
