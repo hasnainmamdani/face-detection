@@ -5,10 +5,10 @@ This is a school project in which we (myself and group mate [https://github.com/
 
 ![](https://github.com/hasnainmamdani/face-detection/blob/master/html/hog_vis.png)
 
-### Code Structure
+### Code Structure and Usage
 The skeleton code was provided to us by the professor. We kept the file names unchanged and implemented the missing parts. Following is an outline of the stencil code:
 
-*proj4.m*. The top level script for training and testing your object detector. It predicts random faces in the test images. It calls the following functions, many of which are simply placeholders in the starter code.
+*proj4.m*. The top level script for training and testing your object detector. The usage is as simple as running this script. It predicts random faces in the test images. It calls the following functions, many of which are simply placeholders in the starter code.
 
 get_positive_features.m (we coded this). Load cropped positive trained examples (faces) and convert them to HoG features with a call to vl_hog.
 
